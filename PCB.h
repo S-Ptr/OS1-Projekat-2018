@@ -1,10 +1,11 @@
 #ifndef __PCB_H_
 #define __PCB_H_
 
+class Thread;
 
 class PCB{
 public:
-	PCB();
+	PCB(Thread* myThr);
 	~PCB();
 	void sleep(int time);
 	void wait2complete();
@@ -18,8 +19,7 @@ public:
 	//bit 4 = finished;
 	char flag;
 	int kvant;
-
-	
+	Thread* myThread;
 };
 
 #endif
