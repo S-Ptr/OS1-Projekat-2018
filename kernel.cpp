@@ -2,53 +2,72 @@
 #include "SCHEDULE.H"
 #include "PCB.h"
 #include "IdleThr.h"
+#include "SLPList.h"
 
-volatile PCB* running;
-volatile Thread* placeholder = new IdleThr();
+Thread* placeholder;
+SleepList sleeping;
+extern void tick();
 
 //temporary storage
 unsigned tsp;
 unsigned tss;
 unsigned tbp;
 
-volatile int counter = 20;
+volatile unsigned int counter = 9999;
 volatile int csreq = 0;
 
 void interrupt timer(){	// prekidna rutina
-	if (!cseq) brojac--; 
-	if (brojac == 0 || csreq) {
+	if (!csreq) {
+		counter--;
+		--((sleeping.first)->delta);
+		while((sleeping.first)->delta == 0){
+			Scheduler::put((sleeping.first)->data);
+			sleeping.temp = (sleeping.first)->next;
+			(sleeping.first)->next = 0;
+			(sleeping.first)->data = 0;
+			delete sleeping.first;
+			sleeping.first = sleeping.temp;
+		}
+	}; 
+	if (counter == 0 || csreq) {
+#ifndef BCC_BLOCK_IGNORE
 		asm {
 			// cuva sp
 			mov tsp, sp
 			mov tss, ss
 			mov tbp, bp
 		}
-
-		running->sp = tsp;
-		running->ss = tss;
-		running->bp = tbp;
+#endif
+		PCB::running->sp = tsp;
+		PCB::running->ss = tss;
+		PCB::running->bp = tbp;
 		//set flag to ready
-		running->flag = 0x1;
-
-		running= Scheduler::get();	// Scheduler
-  		
-		if(running == 0){
-			running = placeholder->myPCB;
+		PCB::running->flag = 0x1;
+		if(PCB::running->myThread != placeholder){
+			Scheduler::put(PCB::running);
 		}
 
-		tsp = running->sp;
-		tss = running->ss;
-		tbp = running->bp;
+		PCB::running= Scheduler::get();	// Scheduler
+  		
+		if(PCB::running == 0){
+			PCB::running = placeholder->getPCB();
+		}
+		PCB::running->flag = 0x2; //set flag to PCB::running
 
-		brojac = running->kvant;
-		//set flag to running
-		running->flag = 0x2;
+		tsp = PCB::running->sp;
+		tss = PCB::running->ss;
+		tbp = PCB::running->bp;
 
+		counter = PCB::running->kvant;
+		//set flag to PCB::running
+		PCB::running->flag = 0x2;
+#ifndef BCC_BLOCK_IGNORE
 		asm {
 			mov sp, tsp   // restore sp
 			mov ss, tss
 			mov bp, tbp
 		}
+#endif
 	} 
     
 	// poziv stare prekidne rutine koja se 
@@ -56,8 +75,12 @@ void interrupt timer(){	// prekidna rutina
      // poziva se samo kada nije zahtevana promena
      // konteksta – tako se da se stara
      // rutina poziva samo kada je stvarno doslo do prekida	
-	if(!csreq) asm int 60h;
-		                                              
+#ifndef BCC_BLOCK_IGNORE
+	if(!csreq)
+	{
+		asm int 60h
+	}
+#endif
 	csreq = 0;
 }
 
@@ -65,6 +88,7 @@ unsigned oldTimerOFF, oldTimerSEG; // stara prekidna rutina
 
 // postavlja novu prekidnu rutinu
 void setup(){
+#ifndef BCC_BLOCK_IGNORE
 	asm{
 		cli
 		push es
@@ -90,9 +114,11 @@ void setup(){
 		pop es
 		sti
 	}
+#endif
 }
 
 void restore(){
+#ifndef BCC_BLOCK_IGNORE
 	asm {
 		cli
 		push es
@@ -111,18 +137,22 @@ void restore(){
 		pop es
 		sti
 	}
+#endif
 }
 
 extern int userMain(int argc, char* argv[]);
 int returnval;
 
-int main (int argc, char* argv[]);{
+int main (int argc, char* argv[]){
 	setup();
+	placeholder = new IdleThr();
+
 
 	//??
 	returnval = userMain(argc, argv);
 
 	restore();
+	delete placeholder;
 
 	return returnval;
 }
