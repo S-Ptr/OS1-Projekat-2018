@@ -4,19 +4,19 @@
 class PCB;
 class PCBList{
 public:
-	typedef struct node Node;
 	struct node{
 		PCB *data;
-		Node *next;
+		node *next;
+		node(PCB* asdf): data(asdf), next(0){}
 	};
-	Node *first, *last;
-
+	node *first, *last;
+	node *temp;
+	PCB *PCBtemp;
 	PCBList();
 	~PCBList();
 	void insertFirst(PCB* asdf);
 	void insertLast(PCB* asdf);
-	PCB* popFirst();
-	PCB* popLast();
+	void popFirst(); //PCB iz prvog se smesta u PCBtemp
 
 
 };

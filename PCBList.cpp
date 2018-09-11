@@ -3,8 +3,15 @@
 
 PCBList::PCBList(): first(0), last(0){}
 
+PCBList::~PCBList(){
+	while(first){
+		popFirst();
+	}
+}
+
 void PCBList::insertFirst(PCB* asdf){
-	temp = new Node(asdf);//tek tako?
+	if(!asdf) return;
+	temp = new node(asdf);
 	if(!first){
 		first = last = temp;
 	}
@@ -15,7 +22,8 @@ void PCBList::insertFirst(PCB* asdf){
 }
 
 void PCBList::insertLast(PCB* asdf){
-	temp = new Node(asdf);
+	if(!asdf) return;
+	temp = new node(asdf);
 	if(!last){
 		first = last = temp;
 	}
@@ -25,12 +33,15 @@ void PCBList::insertLast(PCB* asdf){
 	}
 }
 
-PCB* PCBList::popFirst(){
+void PCBList::popFirst(){
+	if(!first){
+		PCBtemp = 0;
+		return;
+	}
 	temp = first;
 	first = first->next;
 	PCBtemp = temp->data;
 	temp->next = 0;
 	temp->data = 0;
 	delete temp; //maskiranje?
-	return PCBtemp
 }
