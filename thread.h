@@ -13,13 +13,17 @@ public:
 	void waitToComplete();
 	virtual ~Thread();
 	static void sleep(Time timeToSleep);
-	//static void wrapper(Thread* running);
+	PCB* getPCB();
 protected:
 	friend class PCB;
 	Thread(StackSize stackSize = defaultStackSize, Time timeSlice = defaultTimeSlice);
 	virtual void run() {}
 private:
 	PCB* myPCB;
+	/*static void wrapper(Thread* running){
+		running->run();
+		//other syscalls
+	}*/
 };
 void dispatch();
 #endif
