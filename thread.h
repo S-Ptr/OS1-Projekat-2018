@@ -13,7 +13,8 @@ public:
 	void waitToComplete();
 	virtual ~Thread();
 	static void sleep(Time timeToSleep);
-	PCB* getPCB();
+	int getId() const{return id;}
+	static int getRunningId();
 protected:
 	friend class PCB;
 	Thread(StackSize stackSize = defaultStackSize, Time timeSlice = defaultTimeSlice);
@@ -24,6 +25,8 @@ private:
 		running->run();
 		//other syscalls
 	}*/
+	int id;
+	static int idgen;
 };
 void dispatch();
 #endif

@@ -17,7 +17,7 @@ public:
 	void insertFirst(PCB* asdf);
 	void insertLast(PCB* asdf);
 	void popFirst(); //PCB iz prvog se smesta u PCBtemp
-
+	void flush();
 
 };
 

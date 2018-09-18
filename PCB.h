@@ -20,6 +20,7 @@ public:
 	void wait2complete();
 	void start();
 	static void run(); //omotacka funkcija
+	static PCB* getPCB(Thread* asdf);
 
 	unsigned long stkSize;
 	unsigned* stack;
@@ -27,15 +28,11 @@ public:
 	unsigned ss;
 	unsigned bp;
 	PCBList* waiting;
-	//flag guide: 
-	//bit 0 = ready; bit 1 = running
-	//bit 2 = sleep; bit 3 = blocked;
-	//bit 4 = finished;
-	//bit 5 = new;
 	char flag;
 	unsigned int kvant;
+	int ID;
+	static int IDgen;
 	Thread* myThread;
-	PCBList *waitlist;
 
 	static PCB* running;
 };
