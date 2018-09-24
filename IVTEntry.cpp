@@ -2,7 +2,7 @@
 #include <dos.h>
 #include "KernelEv.h"
 
-IVTEntry** IVTEntry::IVTref = new IVTEntry*[256];
+IVTEntry* IVTEntry::IVTref[256] = {0};
 
 IVTEntry::IVTEntry(unsigned char _entryNo, pISR newEntry):entryNo(_entryNo){
 #ifndef BCC_BLOCK_IGNORE
@@ -16,14 +16,17 @@ IVTEntry::~IVTEntry(){
 #ifndef BCC_BLOCK_IGNORE
 	setvect(entryNo, oldEntry);
 #endif
+	myEv = 0;
 }
 
-void IVTEntry::callOldRoutine(){
+void IVTEntry::callOldISR(){
 	(*oldEntry)();
 }
 
 void IVTEntry::signal(){
-	myEv->signal();
+	if(myEv){
+		myEv->signal();
+	}
 }
 
 IVTEntry* IVTEntry::fetchEntry(unsigned char ivtNo){

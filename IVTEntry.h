@@ -8,14 +8,14 @@ class IVTEntry{
 public:
 	IVTEntry(unsigned char _entryNo, pISR newEntry);
 	~IVTEntry();
-	void callOldRoutine();
+	void callOldISR();
 	void signal();
 	static IVTEntry* fetchEntry(unsigned char ivtNo);
 
 	pISR oldEntry;
 	unsigned char entryNo;
 	KernelEv* myEv;
-	static IVTEntry** IVTref;
+	static IVTEntry* IVTref[256];
 };
 
 #endif
